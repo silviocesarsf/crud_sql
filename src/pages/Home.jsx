@@ -1,6 +1,10 @@
 import React from "react";
 import "../index.css";
-import { AiOutlineUserAdd } from "react-icons/ai";
+import {
+  AiOutlineUserAdd,
+  AiOutlineEdit,
+  AiOutlineDelete,
+} from "react-icons/ai";
 import { useState } from "react";
 import Modal from "../components/Modal";
 import { useEffect } from "react";
@@ -8,21 +12,33 @@ import axios from "axios";
 
 const Home = () => {
   const [modalIsOpen, setIsModalOpen] = useState(false);
+  const [fetchData, setFetchData] = useState([]);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
+  };
+
+  const handleDelete = (param) => {
+    console.log("Excluiu", param);
+
+    axios
+      .delete(`http://localhost:3001/delete/${param}`)
+      .then((response) => {})
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   useEffect(() => {
     axios
       .get("http://localhost:3001/get")
       .then((response) => {
-        console.log(response.data);
+        setFetchData(response.data);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, []);
+  }, [modalIsOpen, handleDelete]);
 
   return (
     <main className="min-h-screen w-full flex items-center justify-center bg-white">
@@ -41,28 +57,41 @@ const Home = () => {
         </div>
         {/* Conteúdo */}
         <div className="pt-[65px]">
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Telefone</th>
-                <th>Endereço</th>
-                <th>Email</th>
-                <th>Senha</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>John Doe</td>
-                <td>(123) 456-7890</td>
-                <td>123 Main St</td>
-                <td>john@example.com</td>
-                <td>********</td>
-              </tr>
-            </tbody>
-          </table>
+          {fetchData.length > 0 ? (
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nome</th>
+                  <th>Telefone</th>
+                  <th>Endereço</th>
+                  <th>Email</th>
+                  <th>Senha</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {typeof fetchData !== "undefined" &&
+                  fetchData.map((data) => (
+                    <tr key={data.idcrud}>
+                      <td>{data.idcrud}</td>
+                      <td>{data.nome}</td>
+                      <td>{data.telefone}</td>
+                      <td>{data.endereco}</td>
+                      <td>{data.email}</td>
+                      <td>{data.senha}</td>
+                      <td onClick={() => handleDelete(data.idcrud)}>
+                        <AiOutlineDelete />
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="absolute top-[50%] left-[43%] text-xl text-[#000000ab]">
+              Ainda não há nada cadastrado
+            </div>
+          )}
         </div>
       </div>
     </main>
